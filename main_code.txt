@@ -54,7 +54,7 @@ Sub myProp(Rw)
 	If Err.Number = 0 Then
 			aMsgBox "已执行，0.5 后关闭对话框"
 		Else
-			aMsgBox "程序执行异常，请排查数模后重新执行，错误代码：" & Err.Number & "，错误信息：" & Err.Description & 0.5s后将退出"
+			aMsgBox "程序执行异常，请排查数模后重新执行，0.5s后将退出"
 		Exit Sub
 	End If
 End Sub
