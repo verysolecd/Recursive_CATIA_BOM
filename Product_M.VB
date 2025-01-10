@@ -1,19 +1,17 @@
-Sub recurPrd3(oprd, xlsht, oRowNb, LV)
-    Dim bDict, oArry, i
-            oArry = infoPrd(oprd, LV)
-            Call Arry2sht(oArry, xlsht, oRowNb)
+Sub recurPrd(oprd, xlsht, currRow, LV)
+    Dim bDict, i
+            Arry2sht bominfoPrd(oprd, LV), xlsht, currRow
             If oprd.Products.Count > 0 Then '若产品1子级>0
                 Set bDict = CreateObject("Scripting.Dictionary") '子产品字典2
                 For i = 1 To oprd.Products.Count
                   If bDict.exists(oprd.Products.Item(i).PartNumber) = False Then
                         bDict(oprd.Products.Item(i).PartNumber) = 1
-                        oRowNb = oRowNb + 1
-                        Call recurPrd3(oprd.Products.Item(i), xlsht, oRowNb, LV + 1)
+                        recurPrd oprd.Products.Item(i), xlsht, oRowNb + 1, LV + 1
                     End If
                Next
             End If
 End Sub
-Function infoPrd(oprd, LV)
+Function bominfoPrd(oprd, LV)
     Dim indqty, indLV, oArry(), oDict
     indLV = 0
     indqty = 5
@@ -26,13 +24,12 @@ Function infoPrd(oprd, LV)
         oArry(2)(indqty) = 1  '若无父级产品，证明自己是根产品，数量为1
     End If
     oArry(1)(4) = ""
-    infoPrd = oArry
+    bominfoPrd = oArry
 End Function
 Function Assmass(oprd)
-Dim i
-    Dim total, children: total = 0
+    Dim i, total, children: total = 0
         Set children = oprd.Products
-        If oprd.Products.Count > 0 Then
+        If children.Count > 0 Then
             For i = 1 To children.Count
                 Assmass (children.Item(i))
                 total = children.Item(i).ReferenceProduct.UserRefProperties.Item("iMass").Value + total
@@ -43,34 +40,32 @@ Dim i
         End If
    Assmass = total
 End Function
-
 Function getPropArry(oprd) '获取产品信息
     Dim oprt, refprd: Set refprd = oprd.ReferenceProduct
     Dim colls, i, LV: LV = 0
     Dim oArry(0 To 2)
 '====arr_def 我是默认属性数组===
 With refprd
-    Dim att_def(1 To 4)
-    att_def(1) = .PartNumber
-    att_def(2) = .Nomenclature
-    att_def(3) = .definition
-    att_def(4) = oprd.Name
+    Dim att_default(1 To 4)
+    att_default(1) = .PartNumber
+    att_default(2) = .Nomenclature
+    att_default(3) = .definition
+    att_default(4) = oprd.Name
 End With
     '====arr_usp() 我是自定义属性数组===
     Dim att_usp(1 To 5)
-    Dim uspNames(1 To 5)
+    Dim att_usp_Names(1 To 5)
     
-    uspNames(1) = "iMaterial"
-    uspNames(2) = "iThickness"
-    uspNames(3) = "iMass"
-    uspNames(4) = "iDensity"
-    uspNames(5) = ""   '数量
-    
+    att_usp_Names(1) = "iMaterial"
+    att_usp_Names(2) = "iThickness"
+    att_usp_Names(3) = "iMass"
+    att_usp_Names(4) = "iDensity"
+    att_usp_Names(5) = "qty" '数量    
     For i = 1 To 5
         Select Case i
         Case 1, 3
             Set colls = refprd.UserRefProperties
-            att_usp(i) = thisParameterValue(colls, uspNames(i))
+            att_usp(i) = thisParameterValue(colls, att_usp_Names(i))
             Set colls = Nothing
         Case 2, 4
             On Error Resume Next
@@ -81,15 +76,14 @@ End With
                 att_usp(i) = "N\A"
                 Err.Clear
             Else
-                att_usp(i) = thisParameterValue(colls, uspNames(i))
+                att_usp(i) = thisParameterValue(colls, att_usp_Names(i))
             End If
         Case 5: att_usp(i) = ""
         End Select
-    Next
-    
+    Next    
     '====
         oArry(0) = LV
-        oArry(1) = att_def
+        oArry(1) = att_default
         oArry(2) = att_usp
         getPropArry = oArry
 End Function
