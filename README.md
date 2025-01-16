@@ -13,4 +13,5 @@
 # 使用注意事项
 
 - CATIA必须具有knowledge advisor模块lisence，并安装有VBA扩展；
+
 - excel请调用CATIA的dll库，并启用信任和宏的权限；
